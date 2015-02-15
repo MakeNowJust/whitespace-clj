@@ -1,16 +1,20 @@
-
 (ns whitespace-clj.main
-  (:require [clojure.tools.cli :refer [parse-opts]]
+  (:require [clojure.pprint :refer [pprint]]
+            [clojure.tools.cli :refer [parse-opts]]
             [clojure.string :as string]
             [whitespace-clj.parser :as parser]
-            [whitespace-clj.vm :as vm])
+            [whitespace-clj.vm :as vm]
+            [whitespace-clj.compiler :as compiler])
   (:gen-class))
 
 (def cli-options
   [["-h" "--help"    "show this help"]
    ["-v" "--version" "show version"]
    ["-c" "--chars"   "show source code as visible characters"]
-   ["-t" "--text"    "show source code as assembled text"]])
+   ["-t" "--text"    "show source code as assembled text"]
+   ["-l" "--lisp"    "compile to Clojure code and run"]
+   ["-s" "--sexp"    "compile to Clojure code and show"]
+   [nil  "--time"    "show executing time"]])
 
 (defn print-help
   [summary]
@@ -23,7 +27,6 @@
   (-> (filter (partial contains? #{\tab \space \newline}) source)
       string/join
       (string/replace "\t" "T") (string/replace " " "S")))
-
 
 (defn -main
   [& args]
@@ -47,8 +50,16 @@
                                          (printf "%04d: " (inc i))
                                          (if (== (count cmd) 2)
                                            (condp = (first cmd)
-                                             :push (printf "push %s (%s)\n" (second cmd) (pr-str (char (second cmd))))
+                                             :push (printf "push %s%s\n" (second cmd) (let [c (second cmd)] (if (neg? c) "" (str " (" (pr-str (char c)) ")"))))
                                              (printf "%s #%04d\n" (name (first cmd)) (get ls (second cmd) -1)))
                                            (printf "%s\n" (name (first cmd))))))
+              (:sexp (:options opt)) (let [program (parser/parse source)
+                                           cljprg  (compiler/compile-ws program)]
+                                       (pprint cljprg))
+
               :else (let [program (parser/parse source)]
-                      (vm/run program)))))))
+                      (cond
+                       (:lisp (:options opt)) (let [cljprg (compiler/compile-ws program)
+                                                   cljfn  (eval (list 'fn [] cljprg))]
+                                               (if (:time (:options opt)) (time (cljfn)) (eval (cljfn))))
+                       :else (if (:time (:options opt)) (time (vm/run program)) (vm/run program)))))))))
