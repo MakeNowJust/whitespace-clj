@@ -93,13 +93,15 @@
    :output-char (fn [vm _]
                   (assert (>= (count (:stack vm)) 1) "call stack underflow")
                   (printf "%c" (int (first (:stack vm))))
+                  (flush)
                   (update-in vm [:stack] (partial drop 1)))
    :output-num  (fn [vm _]
                   (assert (>= (count (:stack vm)) 1) "call stack underflow")
                   (printf "%s" (first (:stack vm)))
+                  (flush)
                   (update-in vm [:stack] (partial drop 1)))
    :read-char   (fn [vm _]
-                  (update-in vm [:stack] #(conj % (bigint (.read System/in)))))
+                  (update-in vm [:stack] #(conj % (bigint (.read *in*)))))
    :read-num    (fn [vm _]
                   (update-in vm [:stack] #(conj % (bigint (read-line)))))})
 
