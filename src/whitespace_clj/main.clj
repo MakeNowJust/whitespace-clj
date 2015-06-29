@@ -50,7 +50,7 @@
                                          (printf "%04d: " (inc i))
                                          (if (== (count cmd) 2)
                                            (condp = (first cmd)
-                                             :push (printf "push %s%s\n" (second cmd) (let [c (second cmd)] (if (neg? c) "" (str " (" (pr-str (char c)) ")"))))
+                                             :push (printf "push %s%s\n" (second cmd) (let [c (second cmd)] (if (or (neg? c) (> c 65535)) "" (str " (" (pr-str (char c)) ")"))))
                                              (printf "%s #%04d\n" (name (first cmd)) (get ls (second cmd) -1)))
                                            (printf "%s\n" (name (first cmd))))))
               (:sexp (:options opt)) (let [program (parser/parse source)
