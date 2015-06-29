@@ -35,7 +35,7 @@
           :divide      (recur nxt gen (conj cur `((fn [[~'s ~'h]] [(conj (drop 2 ~'s) (/ (second ~'s) (first ~'s))) ~'h]))) lbl cnt lbls)
           :modulo      (recur nxt gen (conj cur `((fn [[~'s ~'h]] [(conj (drop 2 ~'s) (mod (second ~'s) (first ~'s))) ~'h]))) lbl cnt lbls)
 
-          ;; ~'heap access
+          ;; heap access
           :store       (recur nxt gen (conj cur `((fn [[~'s ~'h]] [(drop 2 ~'s) (assoc ~'h (second ~'s) (first ~'s))]))) lbl cnt lbls)
           :retrieve    (recur nxt gen (conj cur `((fn [[~'s ~'h]] [(conj (drop 1 ~'s) (get ~'h (first ~'s))) ~'h]))) lbl cnt lbls)
 
